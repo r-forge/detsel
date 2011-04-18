@@ -225,25 +225,29 @@ run.detsel <- function(example = FALSE) {
 	for (i in 1:n) {							# loop over population pairs
 		pop1 <- obs[i,2]
 		pop2 <- obs[i,3]
-		sample_sizes  <- cbind(all_sample_sizes[,(pop1 + 1)],all_sample_sizes[,(pop2 + 1)])
-		sample_sizes <- unique(sample_sizes)
-		s <- dim(sample_sizes)[1]
-		cpt <- cpt + s
+		if ((obs[i,4] > 0) & (obs[i,5] > 0)) {
+			sample_sizes  <- cbind(all_sample_sizes[,(pop1 + 1)],all_sample_sizes[,(pop2 + 1)])
+			sample_sizes <- unique(sample_sizes)
+			s <- dim(sample_sizes)[1]
+			cpt <- cpt + s
+		}
 	}
 	message(paste('The program will now create ',toString(cpt),' simulation files. Please wait, this can take some time...',sep = ''))
 	flush.console()
 	for (i in 1:n) {							# loop over population pairs
 		pop1 <- obs[i,2]
 		pop2 <- obs[i,3]
-		sample_sizes  <- cbind(all_sample_sizes[,(pop1 + 1)],all_sample_sizes[,(pop2 + 1)])
-		sample_sizes <- unique(sample_sizes)
-		s <- dim(sample_sizes)[1]
-		for (j in 1:s) {						# loop over sample sizes
-			n1 <- sample_sizes[j,1]
-			n2 <- sample_sizes[j,2]	
-			message(paste('Simulating data in output file: `Pair_',toString(pop1),'_',toString(pop2),'_',toString(n1),'_',toString(n2),'.dat`...',sep = ''))
-			flush.console()
-			SimulDiv(pop1,pop2,n1,n2)
+		if ((obs[i,4] > 0) & (obs[i,5] > 0)) {
+			sample_sizes  <- cbind(all_sample_sizes[,(pop1 + 1)],all_sample_sizes[,(pop2 + 1)])
+			sample_sizes <- unique(sample_sizes)
+			s <- dim(sample_sizes)[1]
+			for (j in 1:s) {					# loop over sample sizes
+				n1 <- sample_sizes[j,1]
+				n2 <- sample_sizes[j,2]	
+				message(paste('Simulating data in output file: `Pair_',toString(pop1),'_',toString(pop2),'_',toString(n1),'_',toString(n2),'.dat`...',sep = ''))
+				flush.console()
+				SimulDiv(pop1,pop2,n1,n2)
+			}
 		}
 	}
 	message('All the simulations have been completed.');
@@ -254,7 +258,9 @@ run.detsel <- function(example = FALSE) {
 	message('Pair\t\tF_1 (obs)\tF_1 (sim)\tF_2 (obs)\tF_2 (sim)')
 	for (i in 1:n) {
 		list <- grep(as.character(target[i,1]),as.character(realized[,1]))
-		message(paste(as.character(target[i,1]),'\t',format(target[i,4],digits = 4),'\t\t',format(mean(realized[list,2]),digits = 4),'\t\t',format(target[i,5],digits = 4),'\t\t',format(mean(realized[list,3]),digits = 4),sep = ''))
+		if (length(list) > 0) {
+			message(paste(as.character(target[i,1]),'\t',format(target[i,4],digits = 4),'\t\t',format(mean(realized[list,2]),digits = 4),'\t\t',format(target[i,5],digits = 4),'\t\t',format(mean(realized[list,3]),digits = 4),sep = ''))
+		}
 	}
 	message('---------------------------------------------------------')
 }
@@ -268,10 +274,20 @@ draw.detsel.graphs <- function(i,j,x.range = c(-1,1),y.range = c(-1,1),n.bins = 
 		for (n.pairs in 1: dim(infile)[1]) {
 			pop.1 <- infile[n.pairs,2]
 			pop.2 <- infile[n.pairs,3]
-			draw.single.detsel.graph(i = pop.1,j = pop.2,x.range = x.range,y.range = y.range,n.bins = n.bins,m = m,alpha = alpha,pdf = pdf,outliers)
+			if ((infile[n.pairs,4] > 0) & (infile[n.pairs,5] > 0)) {
+				draw.single.detsel.graph(i = pop.1,j = pop.2,x.range = x.range,y.range = y.range,n.bins = n.bins,m = m,alpha = alpha,pdf = pdf,outliers)
+			} else {
+			message('multilocus estimates of differentiation in populations ',toString(pop.1),' and ',toString(pop.2),' are negative; cannot draw the graphs...',sep = '')	
+		}
 		} 
 	} else {
-		draw.single.detsel.graph(i,j,x.range = x.range,y.range = y.range,n.bins = n.bins,m = m,alpha = alpha,pdf = pdf,outliers)
+		infile <- read.table('infile.dat',skip = 1)
+		list <- grep(paste('Pair_',toString(i),'_',toString(j),sep = ''),as.character(infile[,1]))
+		if ((infile[list,4] > 0) & (infile[list,5] > 0)) {
+			draw.single.detsel.graph(i,j,x.range = x.range,y.range = y.range,n.bins = n.bins,m = m,alpha = alpha,pdf = pdf,outliers)
+		} else {
+			message('multilocus estimates of differentiation in populations ',toString(i),' and ',toString(j),' are negative; cannot draw the graphs...',sep = '')	
+		}
 	}
 	if (pdf) {
 		dev.off()
@@ -333,9 +349,7 @@ draw.single.detsel.graph <- function(i,j,x.range,y.range,n.bins,m,alpha,pdf,outl
 		nobs <- plotfile[plotfile[,5] == nall[l],1:2]
 		nid <- plotfile[plotfile[,5] == nall[l],6]
 		pos <- match(nid,pv[,1])
-		p <- cbind(nid[pos],pv[pos,2])
-		
-		
+		p <- cbind(nid,pv[pos,2]) #### BUG corrected 14-08-2011
 		if (missing(outliers)) {
 			selected <- cbind(nobs[p[,2] <= alpha,1],nobs[p[,2] <= alpha,2])
 			locus.name <- p[p[,2] <= alpha,1]
@@ -375,97 +389,101 @@ compute.p.values <- function(x.range = c(-1,1),y.range = c(-1,1),n.bins = c(100,
 	pops <- read.table('infile.dat',skip = 1)
 	all_sample_sizes <- read.table('sample_sizes.dat',skip = 2)
 	n <- dim(pops)[1]
-	for (i in 1:n) {							# loop over population pairs
-		pv <- {}
+	for (i in 1:n) {						# loop over population pairs
 		pop1 <- pops[i,2]
 		pop2 <- pops[i,3]
-		sample_sizes  <- cbind(all_sample_sizes[,(pop1 + 1)],all_sample_sizes[,(pop2 + 1)])
-		list_sample_sizes <- unique(sample_sizes)
-		s <- dim(list_sample_sizes)[1]
-		plotfile <- read.table(paste('plot_',toString(pop1),'_',toString(pop2),'.dat',sep = ''))
-		id <- plotfile[,6]
-		obs <- cbind(plotfile[,1],plotfile[,2])
-		pv <- matrix(NA,dim(obs)[1],2)
-		cpt <- 1
-		for (j in 1:s) {						# loop over sample sizes
-			n1 <- list_sample_sizes[j,1]
-			n2 <- list_sample_sizes[j,2]
-			data <- read.table(paste('Pair_',toString(pop1),'_',toString(pop2),'_',toString(n1),'_',toString(n2),'.dat',sep = ''))
-			list_loci  <- id[sample_sizes[id,1] == n1 & sample_sizes[id,2] == n2]
-			pos <- match(list_loci,id)
-			all <- plotfile[pos,5]
-			nall <- unique(all)
-			for (l in 1:length(nall)) {
-				raw <- cbind(data[,1][data[,5] == nall[l]],data[,2][data[,5] == nall[l]])
-				if (nall[l] == 2) {
-					hist <- unique(raw)
-					list <- array(0,length(hist[,1]))
-					for (k in 1:length(hist[,1])) {
-						list[k] <- length(raw[,1][raw[,1] == hist[k,1] & raw[,2] == hist[k,2]])
-					}
-					sub <- list / sum(list)
-					list <- sort(unique(sub),decreasing = TRUE)
-					pr <- array(0,length(list))
-					for (k in 1:length(list)) {
-						pr[k] <- list[k] * length(sub[sub == list[k]])
-					}
-					freq <- cbind(list,pr)
-					dist <- cbind(freq[,1],cumsum(freq[,2]))
-					nobs <- cbind(plotfile[pos,1][plotfile[pos,5] == nall[l]],plotfile[pos,2][plotfile[pos,5] == nall[l]])
-					nid <- plotfile[pos,6][plotfile[pos,5] == nall[l]]
-					p <- array(0,length(nobs[,1]))
-					for (k in 1:length(nobs[,1])) {
-						r1 <- match(nobs[k,1],hist[,1])
-						r2 <- match(nobs[k,2],hist[,2])
-						if (!(NA %in% r1) & !(NA %in% r2)) {
-							if (length(intersect(r1,r2)) > 0) {
-								if (nobs[k,1] == hist[r1,1] & nobs[k,2] == hist[r2,2]) {
-									lev <- sub[r1]
-									x <- seq(1,length(dist[,1]))[dist[,1] == lev]
-									p[k] <- dist[x,2]
+		if ((pops[i,4] > 0) & (pops[i,5] > 0)) {
+			pv <- {}
+			sample_sizes  <- cbind(all_sample_sizes[,(pop1 + 1)],all_sample_sizes[,(pop2 + 1)])
+			list_sample_sizes <- unique(sample_sizes)
+			s <- dim(list_sample_sizes)[1]
+			plotfile <- read.table(paste('plot_',toString(pop1),'_',toString(pop2),'.dat',sep = ''))
+			id <- plotfile[,6]
+			obs <- cbind(plotfile[,1],plotfile[,2])
+			pv <- matrix(NA,dim(obs)[1],2)
+			cpt <- 1
+			for (j in 1:s) {					# loop over sample sizes
+				n1 <- list_sample_sizes[j,1]
+				n2 <- list_sample_sizes[j,2]
+				data <- read.table(paste('Pair_',toString(pop1),'_',toString(pop2),'_',toString(n1),'_',toString(n2),'.dat',sep = ''))
+				list_loci  <- id[sample_sizes[id,1] == n1 & sample_sizes[id,2] == n2]
+				pos <- match(list_loci,id)
+				all <- plotfile[pos,5]
+				nall <- unique(all)
+				for (l in 1:length(nall)) {
+					raw <- cbind(data[,1][data[,5] == nall[l]],data[,2][data[,5] == nall[l]])
+					if (nall[l] == 2) {
+						hist <- unique(raw)
+						list <- array(0,length(hist[,1]))
+						for (k in 1:length(hist[,1])) {
+							list[k] <- length(raw[,1][raw[,1] == hist[k,1] & raw[,2] == hist[k,2]])
+						}
+						sub <- list / sum(list)
+						list <- sort(unique(sub),decreasing = TRUE)
+						pr <- array(0,length(list))
+						for (k in 1:length(list)) {
+							pr[k] <- list[k] * length(sub[sub == list[k]])
+						}
+						freq <- cbind(list,pr)
+						dist <- cbind(freq[,1],cumsum(freq[,2]))
+						nobs <- cbind(plotfile[pos,1][plotfile[pos,5] == nall[l]],plotfile[pos,2][plotfile[pos,5] == nall[l]])
+						nid <- plotfile[pos,6][plotfile[pos,5] == nall[l]]
+						p <- array(0,length(nobs[,1]))
+						for (k in 1:length(nobs[,1])) {
+							r1 <- match(nobs[k,1],hist[,1])
+							r2 <- match(nobs[k,2],hist[,2])
+							if (!(NA %in% r1) & !(NA %in% r2)) {
+								if (length(intersect(r1,r2)) > 0) {
+									if (nobs[k,1] == hist[r1,1] & nobs[k,2] == hist[r2,2]) {
+										lev <- sub[r1]
+										x <- seq(1,length(dist[,1]))[dist[,1] == lev]
+										p[k] <- dist[x,2]
+									} else {
+										p[k] <- 1.0
+		  							}			
 								} else {
 									p[k] <- 1.0
-	  							}			
+								}	
 							} else {
 								p[k] <- 1.0
-							}	
-						} else {
-							p[k] <- 1.0
-						}						
- 					}
-				} else {
-					nobs <- plotfile[pos[plotfile[pos,5] == nall[l]],1:2]
-					nid <- plotfile[pos[plotfile[pos,5] == nall[l]],6]
-					if (dim(raw)[1] > 0) {
-						h <- make.2D.histogram(raw,a,b,n.bins)
-						f <- ash2(h,m)
-						hist <- f$z / sum(f$z)
-						freq <- cumulative.distribution.of.probabilities(hist)
-						d <- (b - a) / (n.bins - 1)
-						v <- trunc((nobs - a) / d) + 1
-						lev <- hist[as.matrix(v)]
-						p <- (freq[match(as.factor(lev),as.factor(freq[,1])),2]) # need to coerce with 'as.factor'
+							}					
+ 						}
 					} else {
-						message(paste('Could not compute the p-value for locus ',toString(nid),' in population pair ',toString(pop1),'-',toString(pop2),sep = ''))
-						flush.console()
-						p <- NA
+						nobs <- plotfile[pos[plotfile[pos,5] == nall[l]],1:2]
+						nid <- plotfile[pos[plotfile[pos,5] == nall[l]],6]
+						if (dim(raw)[1] > 0) {
+							h <- make.2D.histogram(raw,a,b,n.bins)
+							f <- ash2(h,m)
+							hist <- f$z / sum(f$z)
+							freq <- cumulative.distribution.of.probabilities(hist)
+							d <- (b - a) / (n.bins - 1)
+							v <- trunc((nobs - a) / d) + 1
+							lev <- hist[as.matrix(v)]
+							p <- (freq[match(as.factor(lev),as.factor(freq[,1])),2]) # need to coerce with 'as.factor'
+						} else {
+							message(paste('Could not compute the p-value for locus ',toString(nid),' in population pair ',toString(pop1),'-',toString(pop2),sep = ''))
+							flush.console()
+							p <- NA
+						}
 					}
+	 				q <- cbind(nid,(1 - p))
+ 	 				pv[cpt:(cpt + length(p) - 1),] <- q
+ 					cpt <- cpt + length(p)
 				}
-	 			q <- cbind(nid,(1 - p))
- 	 			pv[cpt:(cpt + length(p) - 1),] <- q
- 				cpt <- cpt + length(p)
 			}
+  			o <- order(pv[,1])
+  			loc <- cbind.data.frame('Locus' = pv[o,1])
+  			pvalue <- cbind.data.frame('P-value' = as.double(format(pv[o,2],digits = 6)))
+  			out <- cbind.data.frame(loc,pvalue)
+  			message(paste('The p-values for each locus in population pair ',toString(pop1),'-',toString(pop2),' are:',sep = ''))
+  			message('-------------------')
+  			print(out)
+  			message('-------------------')
+			write.table(out,file = paste('P-values_',toString(pop1),'_',toString(pop2),'.dat',sep = ''),row.names = FALSE,sep = '\t\t')
+			message(paste('The above results are saved in file: P-values_',toString(pop1),'_',toString(pop2),'.dat',sep = ''))
+		}  else {
+			message('multilocus estimates of differentiation in populations ',toString(pop1),' and ',toString(pop2),' are negative; cannot compute the p-values...',sep = '')	
 		}
-  		o <- order(pv[,1])
-  		loc <- cbind.data.frame('Locus' = pv[o,1])
-  		pvalue <- cbind.data.frame('P-value' = as.double(format(pv[o,2],digits = 6)))
-  		out <- cbind.data.frame(loc,pvalue)
-  		message(paste('The p-values for each locus in population pair ',toString(pop1),'-',toString(pop2),' are:',sep = ''))
-  		message('-------------------')
-  		print(out)
-  		message('-------------------')
-		write.table(out,file = paste('P-values_',toString(pop1),'_',toString(pop2),'.dat',sep = ''),row.names = FALSE,sep = '\t\t')
-		message(paste('The above results are saved in file: P-values_',toString(pop1),'_',toString(pop2),'.dat',sep = ''))
 	}
 }
 
