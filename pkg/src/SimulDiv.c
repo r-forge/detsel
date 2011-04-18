@@ -570,10 +570,6 @@ void NewStatistics(Stats *S,
 				p[k][1] = 1.0 - p[k][0];
 			}
 			var = exp(lgammafn(genotype[0][0] + genotype[1][0] + A + 1.0) + lgammafn(D.n1 + D.n2 + A + B) - lgammafn(genotype[0][0] + genotype[1][0] + A) - lgammafn(D.n1 + D.n2 + A + B + 1.0)) - p[2][0] * p[2][0];			
-			for (i = 0; i < 2; ++i) {
-				free(genotype[i]);
-			}
-			free(genotype);
 		} else {
 			for (u = 0; u < S -> K[2]; ++u) {
 				p[0][u] = (double) n[0][u] / D.n1;
@@ -615,7 +611,13 @@ void NewStatistics(Stats *S,
 		S -> num_FST = (1 - q2);
 		S -> den_FST = (1 - q3);
 		if ((1 - q3) > 0) S -> F[ST] = 1.0 - (1 - q2) / (1 - q3); else S -> F[ST] = 9.0;
-	}
+	}	
+	if (dominance && ((S -> K[2]) > 1)) {
+		for (i = 0; i < 2; ++i) {
+			free(genotype[i]);
+		}
+		free(genotype);
+	}	
 	for (k = 0; k < 3; ++k) {
 		free(p[k]);
 	}
