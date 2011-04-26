@@ -1,5 +1,5 @@
 \name{DetSel}
-\Rdversion{0.6}
+\Rdversion{0.7}
 \alias{DetSel}
 \title{A R-package to Detect Marker Loci Responding to Selection}
 \description{

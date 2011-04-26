@@ -407,68 +407,70 @@ compute.p.values <- function(x.range = c(-1,1),y.range = c(-1,1),n.bins = c(100,
 				n2 <- list_sample_sizes[j,2]
 				data <- read.table(paste('Pair_',toString(pop1),'_',toString(pop2),'_',toString(n1),'_',toString(n2),'.dat',sep = ''))
 				list_loci  <- id[sample_sizes[id,1] == n1 & sample_sizes[id,2] == n2]
-				pos <- match(list_loci,id)
-				all <- plotfile[pos,5]
-				nall <- unique(all)
-				for (l in 1:length(nall)) {
-					raw <- cbind(data[,1][data[,5] == nall[l]],data[,2][data[,5] == nall[l]])
-					if (nall[l] == 2) {
-						hist <- unique(raw)
-						list <- array(0,length(hist[,1]))
-						for (k in 1:length(hist[,1])) {
-							list[k] <- length(raw[,1][raw[,1] == hist[k,1] & raw[,2] == hist[k,2]])
-						}
-						sub <- list / sum(list)
-						list <- sort(unique(sub),decreasing = TRUE)
-						pr <- array(0,length(list))
-						for (k in 1:length(list)) {
-							pr[k] <- list[k] * length(sub[sub == list[k]])
-						}
-						freq <- cbind(list,pr)
-						dist <- cbind(freq[,1],cumsum(freq[,2]))
-						nobs <- cbind(plotfile[pos,1][plotfile[pos,5] == nall[l]],plotfile[pos,2][plotfile[pos,5] == nall[l]])
-						nid <- plotfile[pos,6][plotfile[pos,5] == nall[l]]
-						p <- array(0,length(nobs[,1]))
-						for (k in 1:length(nobs[,1])) {
-							r1 <- match(nobs[k,1],hist[,1])
-							r2 <- match(nobs[k,2],hist[,2])
-							if (!(NA %in% r1) & !(NA %in% r2)) {
-								if (length(intersect(r1,r2)) > 0) {
-									if (nobs[k,1] == hist[r1,1] & nobs[k,2] == hist[r2,2]) {
-										lev <- sub[r1]
-										x <- seq(1,length(dist[,1]))[dist[,1] == lev]
-										p[k] <- dist[x,2]
+				if (length(list_loci) > 0) {
+					pos <- match(list_loci,id)
+					all <- plotfile[pos,5]
+					nall <- unique(all)
+					for (l in 1:length(nall)) {
+						raw <- cbind(data[,1][data[,5] == nall[l]],data[,2][data[,5] == nall[l]])
+						if (nall[l] == 2) {
+							hist <- unique(raw)
+							list <- array(0,length(hist[,1]))
+							for (k in 1:length(hist[,1])) {
+								list[k] <- length(raw[,1][raw[,1] == hist[k,1] & raw[,2] == hist[k,2]])
+							}
+							sub <- list / sum(list)
+							list <- sort(unique(sub),decreasing = TRUE)
+							pr <- array(0,length(list))
+							for (k in 1:length(list)) {
+								pr[k] <- list[k] * length(sub[sub == list[k]])
+							}
+							freq <- cbind(list,pr)
+							dist <- cbind(freq[,1],cumsum(freq[,2]))
+							nobs <- cbind(plotfile[pos,1][plotfile[pos,5] == nall[l]],plotfile[pos,2][plotfile[pos,5] == nall[l]])
+							nid <- plotfile[pos,6][plotfile[pos,5] == nall[l]]
+							p <- array(0,length(nobs[,1]))
+							for (k in 1:length(nobs[,1])) {
+								r1 <- match(nobs[k,1],hist[,1])
+								r2 <- match(nobs[k,2],hist[,2])
+								if (!(NA %in% r1) & !(NA %in% r2)) {
+									if (length(intersect(r1,r2)) > 0) {
+										if (nobs[k,1] == hist[r1,1] & nobs[k,2] == hist[r2,2]) {
+											lev <- sub[r1]
+											x <- seq(1,length(dist[,1]))[dist[,1] == lev]
+											p[k] <- dist[x,2]
+										} else {
+											p[k] <- 1.0
+		  								}		
 									} else {
 										p[k] <- 1.0
-		  							}			
+									}	
 								} else {
 									p[k] <- 1.0
-								}	
-							} else {
-								p[k] <- 1.0
-							}					
- 						}
-					} else {
-						nobs <- plotfile[pos[plotfile[pos,5] == nall[l]],1:2]
-						nid <- plotfile[pos[plotfile[pos,5] == nall[l]],6]
-						if (dim(raw)[1] > 0) {
-							h <- make.2D.histogram(raw,a,b,n.bins)
-							f <- ash2(h,m)
-							hist <- f$z / sum(f$z)
-							freq <- cumulative.distribution.of.probabilities(hist)
-							d <- (b - a) / (n.bins - 1)
-							v <- trunc((nobs - a) / d) + 1
-							lev <- hist[as.matrix(v)]
-							p <- (freq[match(as.factor(lev),as.factor(freq[,1])),2]) # need to coerce with 'as.factor'
+								}
+ 							}
 						} else {
-							message(paste('Could not compute the p-value for locus ',toString(nid),' in population pair ',toString(pop1),'-',toString(pop2),sep = ''))
-							flush.console()
-							p <- NA
+							nobs <- plotfile[pos[plotfile[pos,5] == nall[l]],1:2]
+							nid <- plotfile[pos[plotfile[pos,5] == nall[l]],6]
+							if (dim(raw)[1] > 0) {
+								h <- make.2D.histogram(raw,a,b,n.bins)
+								f <- ash2(h,m)
+								hist <- f$z / sum(f$z)
+								freq <- cumulative.distribution.of.probabilities(hist)
+								d <- (b - a) / (n.bins - 1)
+								v <- trunc((nobs - a) / d) + 1
+								lev <- hist[as.matrix(v)]
+								p <- (freq[match(as.factor(lev),as.factor(freq[,1])),2]) # need to coerce with 'as.factor'
+							} else {
+								message(paste('Could not compute the p-value for locus ',toString(nid),' in population pair ',toString(pop1),'-',toString(pop2),sep = ''))
+								flush.console()
+								p <- NA
+							}
 						}
+	 					q <- cbind(nid,(1 - p))
+ 	 					pv[cpt:(cpt + length(p) - 1),] <- q
+ 						cpt <- cpt + length(p)
 					}
-	 				q <- cbind(nid,(1 - p))
- 	 				pv[cpt:(cpt + length(p) - 1),] <- q
- 					cpt <- cpt + length(p)
 				}
 			}
   			o <- order(pv[,1])
