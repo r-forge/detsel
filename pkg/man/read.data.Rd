@@ -1,5 +1,5 @@
 \name{read.data}
-\Rdversion{0.7}
+\Rdversion{0.8}
 \alias{read.data}
 \title{Read Data}
 \description{
