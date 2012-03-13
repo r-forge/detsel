@@ -1,5 +1,5 @@
 \name{DetSel}
-\Rdversion{0.8}
+\Rdversion{1.0}
 \alias{DetSel}
 \title{A R-package to Detect Marker Loci Responding to Selection}
 \description{
@@ -11,6 +11,6 @@ Vitalis, R., Dawson, K., and Boursot, P. (2001) Interpretation of variation acro
 
 Vitalis, R., Dawson, K., Boursot, P., and Belkhir, K. (2003) DetSel 1.0: a computer program to detect markers responding to selection, \emph{Journal of Heredity} \bold{94}, 429-431.
 
-Vitalis R. (in press) DETSEL: a R-package to detect marker loci responding to selection, \emph{in} Data Production and Analysis in Population Genomics (Bonin A and Pompanon F., eds). \emph{Methods in Molecular Biology Series}, \emph{Humana Press}, USA
+Vitalis R. (2012) DETSEL: a R-package to detect marker loci responding to selection, \emph{in} Data Production and Analysis in Population Genomics (Bonin A and Pompanon F., eds). \emph{Methods in Molecular Biology Series}, \emph{Humana Press}, USA
 }
 

@@ -1,5 +1,5 @@
 \name{draw.detsel.graphs}
-\Rdversion{0.8}
+\Rdversion{1.0}
 \alias{draw.detsel.graphs}
 \title{Plot Graphical Outputs}
 \description{This command plots graphical outputs for DetSel analyses.
@@ -19,7 +19,7 @@
   \item{outliers}{an optional vector that represents a list of candidate outliers, defined by the user}
 }
 \details{
-Once the \code{\link{run.detsel}} and \code{\link{compute.p.values}} command lines have been executed, draw.detsel.graphs() can be used to plot graphs with an estimation of the density of \eqn{F_1} and \eqn{F_2} estimates, as detailed in the appendix in Vitalis et al (2001). Note that if the arguments i and j are missing, then all the population pairs are plotted. It is noteworthy that our estimation of the density of the \eqn{F_1} and \eqn{F_2} estimates might be discontinuous, because of the discrete nature of the data (the allele counts). This is particularly true when the number of alleles upon which the distribution is conditioned is small. The command line draw.detsel.graphs() produces as many conditional distributions per population pair as there are different allele numbers in the pooled sample. All the observed data points are plotted in each graph. The outlier loci are plotted with a star symbol. For the latter, the locus number (i.e., its rank in the data file) is provided on the graph. If the user choses not to provide a pre-defined list of outliers, then the outlier represent all the markers for which the empirical \emph{P}-value is below the threshold alpha-level,
+Once the \code{\link{run.detsel}} and \code{\link{compute.p.values}} command lines have been executed, the function \code{\link{draw.detsel.graphs}} can be used to plot graphs with an estimation of the density of \eqn{F_1} and \eqn{F_2} estimates, as detailed in the appendix in Vitalis et al (2001). Note that if the arguments i and j are missing, then all the population pairs are plotted. It is noteworthy that our estimation of the density of the \eqn{F_1} and \eqn{F_2} estimates might be discontinuous, because of the discrete nature of the data (the allele counts). This is particularly true when the number of alleles upon which the distribution is conditioned is small. The command line \code{\link{draw.detsel.graphs}} produces as many conditional distributions per population pair as there are different allele numbers in the pooled sample. All the observed data points are plotted in each graph. The outlier loci are plotted with a star symbol. For the latter, the locus number (i.e., its rank in the data file) is provided on the graph. If the user choses not to provide a pre-defined list of outliers, then the outlier represent all the markers for which the empirical \emph{P}-value is below the threshold alpha-level,
 }
 \value{
 The pdf files are created in the current directory.

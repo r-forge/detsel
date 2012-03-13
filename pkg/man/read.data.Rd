@@ -1,5 +1,5 @@
 \name{read.data}
-\Rdversion{0.8}
+\Rdversion{1.0}
 \alias{read.data}
 \title{Read Data}
 \description{
@@ -41,7 +41,10 @@ The output files are saved in the current directory.
 ## This is to generate an example file in the working directory.
 make.example.files()
 
-## This will read an input file named 'data.dat' that contains co-dominant markers, and a maximum allele frequency of 0.99 will be applied (i.e., by removing marker loci in the observed and simulated datasets that have an allele with frequency larger than 0.99).
+## This will read an input file named 'data.dat' that contains co-dominant markers,
+## and a maximum allele frequency of 0.99 will be applied (i.e., by removing 
+## marker loci in the observed and simulated datasets that have an allele with
+## frequency larger than 0.99).
 read.data(infile = 'data.dat',dominance = FALSE,maf = 0.99)
 }
 \references{

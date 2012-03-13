@@ -1,5 +1,5 @@
 \name{genepop.to.detsel}
-\Rdversion{0.8}
+\Rdversion{1.0}
 \alias{genepop.to.detsel}
 \title{Convert Input File}
 \description{This command converts a data file in Genepop format (see Raymond and Rousset 1995; Rousset 2007), which name can be specified using the infile argument into a data file in DetSel format, which name can be specified using the outfile argument.
@@ -42,6 +42,6 @@ genepop.to.detsel(infile = 'data.gen',outfile = 'data-converted.dat')
 \references{
 Raymond, M., and Rousset, F. (1995) Genepop (version 1.2): population genetics software for exact tests and ecumenicism, \emph{Journal of Heredity} \bold{86}: 248-249.
 
-Rousset, F. (2007) genepop'007: a complete re-implementation of the genepop software for Windows and Linux, \emph{Molecular Ecology Notes} \bold{8}: 103-106.
+Rousset, F. (2008) genepop'007: a complete re-implementation of the genepop software for Windows and Linux, \emph{Molecular Ecology Notes} \bold{8}: 103-106.
 }
 

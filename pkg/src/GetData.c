@@ -33,10 +33,11 @@ struct STAT {
 void GetData() {
 	
 	void ReadParameterFileHeader(char datafile_name[32],int *dominance,double *MAF,double *A,double *B);
-	void ReadData(char datafile_name[32],struct DATA *D);
-	void Estimate(struct DATA D,struct STAT *S,double MAF,double A,double B,int dominance);
+	int ReadData(char datafile_name[32],struct DATA *D);
+	int Estimate(struct DATA D,struct STAT *S,double MAF,double A,double B,int dominance);
 	void AllocateMemory(struct DATA D,struct STAT *S);
-	void ReleaseMemory(struct DATA *D,struct STAT *S);
+	void ReleaseMemoryData(struct DATA *D);
+	void ReleaseMemoryStatistics(struct DATA D,struct STAT *S);
 	void WriteOutputs(struct DATA D,struct STAT S,double MAF);	
 	
 	struct DATA D;
@@ -46,11 +47,14 @@ void GetData() {
 	char datafile_name[32];
 	
 	ReadParameterFileHeader(datafile_name,&dominance,&MAF,&A,&B);
-	ReadData(datafile_name,&D); 
-	AllocateMemory(D,&S);
-	Estimate(D,&S,MAF,A,B,dominance);
-	WriteOutputs(D,S,MAF);
-	ReleaseMemory(&D,&S);
+	if (ReadData(datafile_name,&D) == 0) {
+		AllocateMemory(D,&S);
+		if (Estimate(D,&S,MAF,A,B,dominance) == 0) {
+			WriteOutputs(D,S,MAF);
+		}
+		ReleaseMemoryStatistics(D,&S);
+	}
+	ReleaseMemoryData(&D);
 }
 
 void ReadParameterFileHeader(char datafile_name[32],
@@ -78,21 +82,38 @@ void ReadParameterFileHeader(char datafile_name[32],
 }	
 
 
-void ReadData(char datafile_name[32],struct DATA *D)
+int ReadData(char datafile_name[32],struct DATA *D)
 
 {
 	FILE *infile;
 	char X;
 	int ByAlleles;
-	int i,j,k;
-	int err;
+	int i,j,k,l,m;
+	int dummy,error;
 	
 	infile = fopen(datafile_name,"r");
-	fscanf(infile,"%d",&ByAlleles);                                                // 1 is by allele 0 is by population
+	if ((error = fscanf(infile,"%d",&ByAlleles)) == 0 || error == EOF) {           // 1 is by allele 0 is by population
+		Rprintf("STOPPED: problem reading file...\n");
+		error = 1;
+		goto end;
+	}
+	if (ByAlleles > 1) {
+		Rprintf("STOPPED: problem reading file...\n");
+		error = 1;
+		goto end;
+	}
 	while(!((X = getc(infile)) == '\n' || X == '\f' || X == '\r'));
-	fscanf(infile,"%d",&D -> ns);                                                  // Read the number of populations
+	if ((error = fscanf(infile,"%d",&D -> ns)) == 0 || error == EOF) {             // Read the number of sampled demes 
+		Rprintf("STOPPED: problem reading file...\n");
+		error = 1;
+		goto end;
+	}
 	while(!((X = getc(infile)) == '\n' || X == '\f' || X == '\r'));
-	fscanf(infile,"%d",&D -> L);                                                   // Read the number of loci
+	if ((error = fscanf(infile,"%d",&D -> L)) == 0 || error == EOF) {              // Read the number of loci 
+		Rprintf("STOPPED: problem reading file...\n");
+		error = 1;
+		goto end;
+	}
 	while(!((X = getc(infile)) == '\n' || X == '\f' || X == '\r'));
 	D -> k = (int *) malloc(D -> L * sizeof(int));                                 // Allocate memory for the number of alleles, the allele coounts and the sum of allele counts
 	D -> T = (int **) malloc(D -> L * sizeof(int *));
@@ -102,7 +123,16 @@ void ReadData(char datafile_name[32],struct DATA *D)
 		D -> n[i]=(int **) malloc(D -> ns * sizeof(int *));
 	}
 	for(i = 0; i < D -> L; ++i) {                                                  // Loop over all loci in the dataset
-		fscanf(infile,"%d",&D -> k[i]);                                            // Read the number of alleles at the ith locus
+		if ((error = fscanf(infile,"%d",&D -> k[i])) == 0 || error == EOF) {       // Read the number of alleles at the ith locus 
+			Rprintf("STOPPED: problem reading file...\n");
+			for(l = 0; l < D -> L; ++l) {
+				for(m = 0; m < D -> ns; ++m) {
+					D -> n[l][m] = NULL;
+				}				
+			}
+			error = 1;
+			goto end;
+		}
 		while(!((X = getc(infile)) == '\n' || X == '\f' || X == '\r'));
 		for(j = 0; j < D -> ns; ++j) {                                             // Allocate memory for the allele counts
 			D -> n[i][j] = (int *) malloc(D -> k[i] * sizeof(int));
@@ -110,8 +140,15 @@ void ReadData(char datafile_name[32],struct DATA *D)
 		if (ByAlleles) {
 			for(j = 0; j < D -> k[i]; ++j) {                                       // Loop over all alleles for the ith locus
 				for(k = 0; k < D -> ns;++k) {                                      // Loop over all populations for the ith locus and the jth allele
-					if ((err = fscanf(infile,"%d",&D -> n[i][k][j])) == 0 || err == EOF) { // Read allele count for the ith locus, jth population and kth allele
-						exit(1);
+					if ((error = fscanf(infile,"%d",&D -> n[i][k][j])) == 0 || error == EOF) { // Read allele count for the ith locus, jth population and kth allele
+						Rprintf("STOPPED: problem reading file...\n");
+						for(l = 0; l < D -> L; ++l) {
+							for(m = 0; m < D -> ns; ++m) {
+								D -> n[l][m] = NULL;
+							}				
+						}						
+						error = 1;
+						goto end;
 					}
 				}                                                                  // End of the loop over populations
 			}                                                                      // End of the loop over alleles
@@ -119,8 +156,15 @@ void ReadData(char datafile_name[32],struct DATA *D)
 		else {
 			for(j = 0; j < D -> ns; ++j) {                                         // Loop over all populations for the ith locus
 				for(k = 0; k < D -> k[i]; ++k) {                                   // Loop over all alleles for the ith locus and the jth population
-					if ((err = fscanf(infile,"%d",&D -> n[i][j][k])) == 0 || err == EOF) { // Read allele count for the ith locus, jth population and kth allele
-						exit(1);
+					if ((error = fscanf(infile,"%d",&D -> n[i][j][k])) == 0 || error == EOF) { // Read allele count for the ith locus, jth population and kth allele
+						Rprintf("STOPPED: problem reading file...\n");
+						for(l = 0; l < D -> L; ++l) {
+							for(m = 0; m < D -> ns; ++m) {
+								D -> n[l][m] = NULL;
+							}				
+						}
+						error = 1;
+						goto end;
 					}
 				}                                                                  // End of the loop over alleles
 			}                                                                      // End of the loop over populations
@@ -131,20 +175,28 @@ void ReadData(char datafile_name[32],struct DATA *D)
 				D -> T[i][j] += D -> n[i][j][k];                                   // Calculate the sum of allele counts, per locus and per population
 			}                                                                      // End of the loop over alleles
 		}                                                                          // End of the loop over populations
-	}                                                                              // End of the loop over loci
+	}                                                                              // End of the loop over loci	
+	if ((error = fscanf(infile,"%d",&dummy)) != 0 && error != EOF) {
+		Rprintf("STOPPED: problem reading file...\n");
+		error = 1;
+		goto end;
+	}
+	error = 0;                                                                     // Normal ending
+end :
 	fclose(infile);
+	return(error);
 }
 
-void Estimate(struct DATA D,
-              struct STAT *S,
-			  double MAF,
-			  double A,
-			  double B,
-			  int dominance)
+int Estimate(struct DATA D,
+             struct STAT *S,
+			 double MAF,
+			 double A,
+			 double B,
+			 int dominance)
 
 {
 	int i,j,k,l,u;
-	int cpt;
+	int cpt,error;
 	double sum_num1,sum_num2,sum_den;
 	double num,num_1,num_2,den,n_c;
 	double yy,q2,q3;
@@ -174,8 +226,13 @@ void Estimate(struct DATA D,
 					}
 				}
 				if ((dominance) & (S -> K[cpt][l] > 2)) {
-					printf("One AFLP marker has more than 2 alleles...\n");
-					exit(1);
+					Rprintf("STOPPED: one AFLP marker has more than 2 alleles...\n");
+					for (k = 0; k < 3; ++k) {
+						free(p[k]);
+					}
+					free(p);
+					error = 1;
+					goto end;
 				}
 				if (S -> maf[cpt][l] <= MAF) {
 					if (dominance) {
@@ -233,8 +290,7 @@ void Estimate(struct DATA D,
 					sum_num_WC += (1 - q2);
 					sum_den_WC += (1 - q3);
 					if ((1 - q3) > 0) S -> F[ST][cpt][l] = 1.0 - (1 - q2) / (1 - q3); else S -> F[ST][cpt][l] = 9.0;
-				}
-				
+				}				
 				for (k = 0; k < 3; ++k) {
 					free(p[k]);
 				}
@@ -246,6 +302,9 @@ void Estimate(struct DATA D,
 			cpt += 1;
 		}
 	}
+	error = 0;
+end:
+	return(error);
 }
 
 void WriteOutputs(struct DATA D,
@@ -331,26 +390,39 @@ void AllocateMemory(struct DATA D,
 	}
 }
 
-void ReleaseMemory(struct DATA *D,
-                   struct STAT *S)
+void ReleaseMemoryData(struct DATA *D)
+
+{
+	int i,j;
+	
+	if ((D -> k) != NULL) {free(D -> k);}
+	if ((D -> T) != NULL) {	
+		for(i = 0; i < D -> L; ++i) {
+			free(D -> T[i]);
+		}
+		free(D -> T);
+	}
+	if ((D -> n) != NULL) {	
+		for(i = 0; i < D -> L; ++i) {
+			for(j = 0; j < D -> ns; ++j) {
+				if ((D -> n[i][j]) != NULL) {free(D -> n[i][j]);}
+			}
+		}
+		for(i = 0; i < D -> L; ++i) {
+			free(D -> n[i]);
+		}
+		free(D -> n);
+	}	
+}
+
+void ReleaseMemoryStatistics(struct DATA D,
+							 struct STAT *S)
 
 {
 	int i,j;
 	int cpt;
 	
-	cpt = (int) (D -> ns * (D -> ns - 1) / 2);
-	for(i = 0; i < D -> L; ++i) {
-		for(j = 0; j < D -> ns; ++j) {
-			free(D -> n[i][j]);
-		}
-	}
-	for(i = 0; i < D -> L; ++i) {
-		free(D -> T[i]);
-		free(D -> n[i]);
-	}
-	free(D -> k);
-	free(D -> T);
-	free(D -> n);
+	cpt = (int) (D.ns * (D.ns - 1) / 2);
 	for(j = 0; j < 3; ++j) {
 		free(S -> multilocus_F[j]);
 	}
