@@ -114,11 +114,6 @@ read.data <- function(infile = 'data.dat',dominance = FALSE,maf = 0.99,a = 0.25,
 		write(as.double(a), file = parameterfile,append = TRUE)
 		write(as.double(b), file = parameterfile,append = TRUE)
 	}
-	if (file.exists('infile.dat')) {
-		unlink('infile.dat')
-		unlink('plot_*.dat')
-		unlink('sample_sizes.dat')
-	}
 	GetData()
 	if(!file.exists('infile.dat')) {
 		stop(paste('Problem reading file ',infile,'... Program stopped.',sep = ''))
@@ -131,16 +126,12 @@ read.data <- function(infile = 'data.dat',dominance = FALSE,maf = 0.99,a = 0.25,
 	}
 	out <- read.table('infile.dat',skip = 1)
 	message('The average values of population-specific measures of differentiation are:')
-	message('----------------------------------------------')
-	message('Pair\t\tF_1\t\t\tF_2')
+	message('------------------------------')
+	message('Pair\t\tF_1\t\t\tF_2\t\t')
 	for (i in 1:dim(out)[1]) {
-		message(paste(toString(out[i,2]),'-',toString(out[i,3]),'\t\t',format(out[i,4],digits = 3),'\t\t\t',format(out[i,5],digits = 3),sep = ''))
+		message(paste(toString(out[i,2]),'-',toString(out[i,3]),'\t\t\t',format(out[i,4],digits = 3),'\t\t',format(out[i,5],digits = 3),sep = ''))
 	}
-#	message('Pair\t\tF_1\t\t\tF_2\t\t')
-#	for (i in 1:dim(out)[1]) {
-#		message(paste(toString(out[i,2]),'-',toString(out[i,3]),'\t\t\t',format(out[i,4],digits = 3),'\t\t',format(out[i,5],digits = 3),sep = ''))
-#	}
-	message('----------------------------------------------')
+	message('------------------------------')
 }
 
 get.data.information <- function(infile) {
@@ -215,13 +206,13 @@ get.simulation.parameters <- function(example) {
 			}
 			parameters[i,] <- sets
 		}
-		write(as.matrix(t(parameters)),ncolumns = 4,file = parameterfile,append = TRUE)
+		write(as.matrix(t(parameters)),ncol = 4,file = parameterfile,append = TRUE)
 	} else {
 		write(as.integer(100000), file = parameterfile,append = TRUE)
 		write(as.double(0.0001), file = parameterfile,append = TRUE)
 		write(as.integer(5), file = parameterfile,append = TRUE)
 		parameters <- c(100,0,0,20000)
-		write(as.matrix(t(parameters)),ncolumns = 4,file = parameterfile,append = TRUE)
+		write(as.matrix(t(parameters)),ncol = 4,file = parameterfile,append = TRUE)
 	}
 }
 
@@ -263,7 +254,7 @@ run.detsel <- function(example = FALSE) {
 	target <- read.table('infile.dat',skip = 1)
 	realized <- read.table('out.dat',skip = 1)
 	message('The difference between observed and simulated values of population-specific measures of differentiation are:')
-	message('-------------------------------------------------------------------------')
+	message('---------------------------------------------------------')
 	message('Pair\t\tF_1 (obs)\tF_1 (sim)\tF_2 (obs)\tF_2 (sim)')
 	for (i in 1:n) {
 		list <- grep(as.character(target[i,1]),as.character(realized[,1]))
@@ -271,7 +262,7 @@ run.detsel <- function(example = FALSE) {
 			message(paste(as.character(target[i,1]),'\t',format(target[i,4],digits = 4),'\t\t',format(mean(realized[list,2]),digits = 4),'\t\t',format(target[i,5],digits = 4),'\t\t',format(mean(realized[list,3]),digits = 4),sep = ''))
 		}
 	}
-	message('-------------------------------------------------------------------------')
+	message('---------------------------------------------------------')
 }
 
 draw.detsel.graphs <- function(i,j,x.range = c(-1,1),y.range = c(-1,1),n.bins = c(100,100),m = c(2,2),alpha = 0.05,pdf = FALSE,outliers) {

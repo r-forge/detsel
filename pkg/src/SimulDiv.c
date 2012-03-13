@@ -105,7 +105,7 @@ void SimulDiv(int *p1,int *p2,int *n1,int *n2) {
 	}	
 	if ((i == 0) && (j == 0)) {
 		Rprintf("STOPPED: populations %d and %d do not exist in the dataset; cannot complete the simulations.\n",pop1,pop2);
-		goto end;
+		goto quit;
 	}
 	strcat(datafile_name,"_");
 	sprintf(y,"%d",D.n1);
@@ -142,7 +142,7 @@ void SimulDiv(int *p1,int *p2,int *n1,int *n2) {
 		}
 		if (!polymorphicsets) {
 			Rprintf("STOPPED: cannot generate polymorphic data in file '%s' with any set of parameters.\n",datafile_name);
-			goto end;
+			goto quit;
 		}
 		iter = (int) totiter / polymorphicsets;
 		outfile = fopen(datafile_name, "w");
@@ -178,7 +178,7 @@ void SimulDiv(int *p1,int *p2,int *n1,int *n2) {
 	else {
 		Rprintf("STOPPED: multilocus estimates of differentiation in populations %d and %d are negative; cannot complete the simulations.\n",pop1,pop2);
 	}
-	end :
+	quit :
 	fclose(infile);
 	fclose(out);
 	free(skip);

@@ -1,5 +1,5 @@
 \name{make.example.files}
-\Rdversion{1.0}
+\Rdversion{0.9}
 \alias{make.example.files}
 \title{Generate an Example File in the Working Directory}
 \description{This command will copy two example files into the user's working directory. The file "data.dat" is in DetSel format, and the file "data.gen" is in Genepop format (see Raymond and Rousset 1995; Rousset 2007).
