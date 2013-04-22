@@ -1,0 +1,7 @@
+1.02
+
+- Fixed some minor bugs in GetData and SimulDiv (internal functions) that caused several warnings using clang 3.2 on OS X 10.8
+
+1.01
+
+- Fixed a bug in SimulDiv (internal function), which affected the computation of the maximum allele frequency for more than 2 alleles.
