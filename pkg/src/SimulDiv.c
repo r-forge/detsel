@@ -72,9 +72,10 @@ void SimulDiv(int *p1,int *p2,int *n1,int *n2) {
 	char datafile_name[32];
 	char filename[32];
 	int i,j,iter,totiter,set,nsets,polymorphic,polymorphicsets;
-	int *skip;
+	int *skip = NULL;
 	FILE *outfile,*infile,*out;
-	char X,y[3];
+	char y[8];			// BUG 17-09-2012 (was y[3])
+    int X;
 	Stats S;
 	Data D;
 	Parameters P;
@@ -100,12 +101,12 @@ void SimulDiv(int *p1,int *p2,int *n1,int *n2) {
 	infile = fopen(INFILE, "r");
 	while(!((X = getc(infile)) == '\n' || X == '\f' || X == '\r'));
 	i = j = 0;
-	while (fscanf(infile,"%s %d %d %lf %lf %lf",&datafile_name,&i,&j,&D.F1,&D.F2,&dummy) != EOF) {
+	while (fscanf(infile,"%s %d %d %lf %lf %lf",datafile_name,&i,&j,&D.F1,&D.F2,&dummy) != EOF) {
 		if ((i == pop1) && (j == pop2)) break;
 	}	
 	if ((i == 0) && (j == 0)) {
 		Rprintf("STOPPED: populations %d and %d do not exist in the dataset; cannot complete the simulations.\n",pop1,pop2);
-		goto quit;
+		goto end;
 	}
 	strcat(datafile_name,"_");
 	sprintf(y,"%d",D.n1);
@@ -142,7 +143,7 @@ void SimulDiv(int *p1,int *p2,int *n1,int *n2) {
 		}
 		if (!polymorphicsets) {
 			Rprintf("STOPPED: cannot generate polymorphic data in file '%s' with any set of parameters.\n",datafile_name);
-			goto quit;
+			goto end;
 		}
 		iter = (int) totiter / polymorphicsets;
 		outfile = fopen(datafile_name, "w");
@@ -178,7 +179,7 @@ void SimulDiv(int *p1,int *p2,int *n1,int *n2) {
 	else {
 		Rprintf("STOPPED: multilocus estimates of differentiation in populations %d and %d are negative; cannot complete the simulations.\n",pop1,pop2);
 	}
-	quit :
+	end :
 	fclose(infile);
 	fclose(out);
 	free(skip);
@@ -202,7 +203,7 @@ void ReadParameterFile(char filename[32],
 
 {
 	FILE *parameters;	
-	char X;
+	int X;
 	int n;
 	
 	parameters = fopen(PARAMETERFILE,"r");
@@ -546,9 +547,9 @@ void NewStatistics(Stats *S,
 			if (p[2][u] > S -> maf) {
 				S -> maf = p[2][u];
 			}
-			if ((1 - p[2][u]) > S -> maf) {
+/*			if ((1 - p[2][u]) > S -> maf) {			BUG 17-09-2012
 				S -> maf = (1 - p[2][u]);
-			}			
+			}*/			
 		}
 	} else {
 		for (u = 0; u < S -> K[2]; ++u) {
@@ -556,9 +557,9 @@ void NewStatistics(Stats *S,
 			if (p[2][u] > S -> maf) {
 				S -> maf = p[2][u];
 			}
-			if ((1 - p[2][u]) > S -> maf) {
+/*			if ((1 - p[2][u]) > S -> maf) {			BUG 17-09-2012
 				S -> maf = (1 - p[2][u]);
-			}			
+			}*/			
 		}
 	}
 	if (S -> maf <= MAF) {

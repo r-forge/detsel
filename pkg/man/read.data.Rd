@@ -1,5 +1,5 @@
 \name{read.data}
-\Rdversion{0.9}
+\Rdversion{1.02}
 \alias{read.data}
 \title{Read Data}
 \description{
@@ -41,12 +41,15 @@ The output files are saved in the current directory.
 ## This is to generate an example file in the working directory.
 make.example.files()
 
-## This will read an input file named 'data.dat' that contains co-dominant markers, and a maximum allele frequency of 0.99 will be applied (i.e., by removing marker loci in the observed and simulated datasets that have an allele with frequency larger than 0.99).
+## This will read an input file named 'data.dat' that contains co-dominant markers,
+## and a maximum allele frequency of 0.99 will be applied (i.e., by removing 
+## marker loci in the observed and simulated datasets that have an allele with
+## frequency larger than 0.99).
 read.data(infile = 'data.dat',dominance = FALSE,maf = 0.99)
 }
 \references{
-Weir, B. S., and Cockerham, C. C. (1984) Estimating F-statistics for the analysis of population structure, \emph{Evolution} \bold{38}: 1358-1370.
+Weir, B. S., and Cockerham, C. C. (1984) Estimating F-statistics for the analysis of population structure, \emph{Evolution} \bold{38}: 1358--1370.
 
-Zhivotovsky, L. A. (1999) Estimating population structure in diploids with multilocus dominant DNA markers, \emph{Molecular Ecology} \bold{8}, 907-913
+Zhivotovsky, L. A. (1999) Estimating population structure in diploids with multilocus dominant DNA markers, \emph{Molecular Ecology} \bold{8}, 907--913
 }
 

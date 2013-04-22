@@ -1,5 +1,5 @@
 \name{run.detsel}
-\Rdversion{0.9}
+\Rdversion{1.02}
 \alias{run.detsel}
 \title{Create Simulated Data}
 \description{This runs the simulated data, using a coalescent-based algorithm.
@@ -32,6 +32,6 @@ read.data(infile = 'data.dat',dominance = FALSE,maf = 0.99)
 run.detsel(example = TRUE)
 }
 \references{
-Weir, B. S., and Cockerham, C. C. (1984) Estimating F-statistics for the analysis of population structure, \emph{Evolution} \bold{38}: 1358-1370.
+Weir, B. S., and Cockerham, C. C. (1984) Estimating F-statistics for the analysis of population structure, \emph{Evolution} \bold{38}: 1358--1370.
 }
 
