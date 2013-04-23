@@ -439,9 +439,9 @@ void NewStatistics(Stats *S,
 	int i,j,k,u;
 	long min,max;
 	double n_c,nsum,nsum2,nbar,xx,yy,q2,q3;
-	double var;
+	double var = 0.0;
 	int recessive,all1,all2,x;
-	int **genotype;
+	int **genotype = NULL;
 	
 	min = 2147483647L;
 	max = -2147483647L;

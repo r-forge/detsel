@@ -200,7 +200,7 @@ int Estimate(struct DATA D,
 	double sum_num1,sum_num2,sum_den;
 	double num,num_1,num_2,den,n_c;
 	double yy,q2,q3;
-	double var;
+	double var = 0.0;
 	double **p;
 	
 	double nsum,nsum2,nbar,xx;

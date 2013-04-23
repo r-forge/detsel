@@ -1,6 +1,5 @@
 Package: DetSel
 Version: 1.02
-Date: 2013-04-23
 Title: A computer program to detect markers responding to selection
 Author: Renaud Vitalis <vitalis@supagro.inra.fr>.
 Maintainer: Renaud Vitalis <vitalis@supagro.inra.fr>
