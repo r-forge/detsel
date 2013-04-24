@@ -1,5 +1,5 @@
 \name{compute.p.values}
-\Rdversion{1.02}
+\Rdversion{1.0.2}
 \alias{compute.p.values}
 \title{Compute Empirical p-values}
 \description{This command compute empirical p-values.

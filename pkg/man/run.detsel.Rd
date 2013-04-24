@@ -1,5 +1,5 @@
 \name{run.detsel}
-\Rdversion{1.02}
+\Rdversion{1.0.2}
 \alias{run.detsel}
 \title{Create Simulated Data}
 \description{This runs the simulated data, using a coalescent-based algorithm.

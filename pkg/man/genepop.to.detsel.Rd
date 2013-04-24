@@ -1,5 +1,5 @@
 \name{genepop.to.detsel}
-\Rdversion{1.02}
+\Rdversion{1.0.2}
 \alias{genepop.to.detsel}
 \title{Convert Input File}
 \description{This command converts a data file in Genepop format (see Raymond and Rousset 1995; Rousset 2007), which name can be specified using the infile argument into a data file in DetSel format, which name can be specified using the outfile argument.

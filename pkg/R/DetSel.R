@@ -216,8 +216,9 @@ get.simulation.parameters <- function(example) {
 			parameters[i,] <- sets
 		}
 		write(as.matrix(t(parameters)),ncolumns = 4,file = parameterfile,append = TRUE)
-	} else {
-		write(as.integer(100000), file = parameterfile,append = TRUE)
+	}
+	else {
+		write(as.integer(10000), file = parameterfile,append = TRUE)
 		write(as.double(0.0001), file = parameterfile,append = TRUE)
 		write(as.integer(5), file = parameterfile,append = TRUE)
 		parameters <- c(100,0,0,20000)

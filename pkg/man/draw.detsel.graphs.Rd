@@ -1,5 +1,5 @@
 \name{draw.detsel.graphs}
-\Rdversion{1.02}
+\Rdversion{1.0.2}
 \alias{draw.detsel.graphs}
 \title{Plot Graphical Outputs}
 \description{This command plots graphical outputs for DetSel analyses.
